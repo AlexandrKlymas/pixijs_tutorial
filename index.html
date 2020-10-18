@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixi tutorial</title>
+    <style>
+        @font-face {
+            font-family: 'Arcade';
+            src: url('font/ARCADECLASSIC.TTF');
+        }
+        #useFont{
+            font-family: Arcade;
+            font-size: 0px;
+        }
+    </style>
+    <script src="js/pixi.min.js"></script>
+    <script>
+        let app;
+        let player;
+        let keys = {};
+        //let keysDiv;
+        let bullets = [];
+        let bulletSpeed = 4;
+        let enemy;
+        let text;
+
+        window.onload = function ()
+        {
+            app = new PIXI.Application(
+                {
+                    width: 750,
+                    height: 600,
+                    backgroundColor: 0xAAAAAA
+                }
+            );
+            document.body.appendChild(app.view);
+            // player = new PIXI.Sprite.from("images/player.png");
+            // player.anchor.set(0.5);
+            // player.x = app.view.width / 2;
+            // player.y = app.view.height / 2;
+            //
+            // app.stage.addChild(player);
+
+            // mouse interactions
+            // app.stage.interactive = true;
+            // app.stage.on('pointermove',movePlayer);
+
+            //keyboard event handlers
+            // window.addEventListener('keydown',keysDown);
+            // window.addEventListener('keyup',keysUp);
+
+
+
+            //keysDiv = document.querySelector('#keys');
+
+            // preload assets
+            app.loader.baseUrl = 'images';
+            app.loader
+                .add('sprite01','bloat01.png')
+                .add('sprite02','bloat02.png')
+                .add('sprite03','bloat03.png')
+                .add('sprite04','bloat04.png')
+                .add('sprite05','bloat05.png')
+                .add('bullet','bullet.png')
+                .add('player','player.png');
+
+            app.loader.onProgress.add(showProgress);
+            app.loader.onComplete.add(doneLoading);
+            app.loader.onError.add(reportError);
+
+            app.loader.load();
+
+            text = new PIXI.Text('Welcome to Your Doom!');
+            text.x = app.view.width/2;
+            text.y = app.view.height/2;
+            text.anchor.set(0.5);
+            text.style = new PIXI.TextStyle({
+               fill: 0xFF0000,
+               fontSize: 40,
+               fontFamily: 'Arcade',
+            });
+            app.stage.addChild(text);
+
+        }
+
+        function showProgress(e)
+        {
+            console.log(e.progress);
+        }
+        function reportError(e)
+        {
+            console.log('ERROR:' + e.message);
+        }
+        function doneLoading(e)
+        {
+            console.log('done loading!');
+
+            document.querySelector('#gameDiv').appendChild(app.view);
+            app.stage.interactive = true;
+            document.querySelector('#gameDiv').addEventListener('pointerdown', fireBullet);
+
+            //player object
+            player = PIXI.Sprite.from(app.loader.resources.player.texture);
+            player.anchor.set(0.5);
+            player.x = 16;
+            player.y = app.view.height / 2;
+            app.stage.addChild(player);
+
+            //enemy object
+            enemy = PIXI.Sprite.from(app.loader.resources.player.texture);
+            enemy.anchor.set(0.5);
+            enemy.x = app.view.width / 2;
+            enemy.y = app.view.height / 2;
+            app.stage.addChild(enemy);
+
+            app.ticker.add(gameLoop);
+        }
+
+        function fireBullet(e)
+        {
+            console.log('fire!');
+
+            let bullet = createBullet();
+            bullets.push(bullet);
+            console.log(bullets);
+        }
+        function createBullet()
+        {
+            let bullet = new PIXI.Sprite.from(app.loader.resources.bullet.texture);
+            bullet.anchor.set(0.5);
+            bullet.x = player.x;
+            bullet.y = player.y;
+            bullet.speed = bulletSpeed;
+            app.stage.addChild(bullet);
+
+            return bullet;
+        }
+
+        function updateBullets(delta)
+        {
+            for (let i = 0; i < bullets.length; i++)
+            {
+                bullets[i].position.y -= bullets[i].speed;
+                if(bullets[i].position.y < 0)
+                {
+                    bullets[i].dead = true;
+                }
+            }
+
+            for (let i = 0; i < bullets.length; i++)
+            {
+                if(bullets[i].dead===true)
+                {
+                    app.stage.removeChild(bullets[i]);
+                    bullets.splice(i,1);
+                }
+            }
+        }
+        function rectsIntersect(a,b)
+        {
+            let aBox = a.getBounds();
+            let bBox = b.getBounds();
+
+            return aBox.x + aBox.width > bBox.x &&
+                aBox.x < bBox.x + bBox.width &&
+                aBox.y +aBox.height > aBox.y &&
+                aBox.y < bBox.y + bBox.height;
+        }
+
+        function gameLoop(delta)
+        {
+            player.x += bulletSpeed;
+            enemy.x -= bulletSpeed;
+
+            if(rectsIntersect(player,enemy))
+            {
+                bulletSpeed = 0;
+            }
+            updateBullets(delta);
+            //keysDiv.innerHTML = JSON.stringify(keys);
+
+            //w
+            // if(keys['87']){
+            //     player.y -= 5;
+            // }
+            // //s
+            // if(keys['83']){
+            //     player.y += 5;
+            // }
+            // //a
+            // if(keys['65']){
+            //     player.x -= 5;
+            // }
+            // //d
+            // if(keys['68']){
+            //     player.x += 5;
+            // }
+        }
+
+        function keysDown(e)
+        {
+            keys[e.keyCode] = true;
+        }
+        function keysUp(e)
+        {
+            keys[e.keyCode] = false;
+        }
+
+
+        function movePlayer(e)
+        {
+            let pos = e.data.global;
+
+            player.x = pos.x;
+            player.y = pos.y;
+
+        }
+
+    </script>
+</head>
+<body>
+    <div id="useFont">A</div>
+    <div id="keys"></div>
+    <div id="gameDiv" style="border: 2px solid saddlebrown"></div>
+
+</body>
+</html>

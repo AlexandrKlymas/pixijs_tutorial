@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixi tutorial</title>
+
+    <script src="js/pixi.min.js"></script>
+    <script>
+        "use strict"
+        let app;
+        let player;
+        let enemy;
+        let bomb;
+
+        class Monster extends PIXI.Sprite{
+            constructor(x=0,y=0,texture,name='none',hp=100,speed=5) {
+                super(texture);
+                this.anchor.set(0.5);
+                this.name = name;
+                this.hp = hp;
+                this.x = x;
+                this.y = y;
+                this.speed = speed;
+            }
+            status (){
+                return this.name + ' has ' + this.hp + ' hit points';
+            }
+            move(){
+                this.x = this.x + this.speed;
+                if((this.x > app.view.width - (this.width/2)) ||
+                (this.x < (this.width/2))){
+                    this.speed = - this.speed;
+                }
+            }
+        }
+
+
+        window.onload = function ()
+        {
+            app = new PIXI.Application(
+                {
+                    width: 750,
+                    height: 600,
+                    backgroundColor: 0xAAAAAA
+                }
+            );
+            document.querySelector('#gameDiv').appendChild(app.view);
+
+            app.loader.baseUrl = 'images';
+            app.loader
+                .add('layout','tileset.png')
+                .add('bloat1','bloat01.png')
+                .add('bloat2','bloat02.png')
+            ;
+
+            app.loader.onComplete.add(doneLoading);
+            app.loader.load();
+
+        }
+        function gameLoop(delta){
+            enemy.move();
+            player.move();
+        }
+
+        function doneLoading()
+        {
+            createMonsters();
+            app.ticker.add(gameLoop);
+        }
+
+        function createMonsters(){
+            enemy = new Monster(100,100,app.loader.resources['bloat1'].texture, 'Enemy', 200,6);
+            player = new Monster(100,500,app.loader.resources['bloat2'].texture, 'Player', 100,10);
+            app.stage.addChild(enemy);
+            app.stage.addChild(player);
+
+
+
+        }
+
+
+
+    </script>
+</head>
+<body>
+<div id="gameDiv"></div>
+</body>
+</html>

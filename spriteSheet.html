@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixi tutorial</title>
+
+    <script src="js/pixi.min.js"></script>
+    <script>
+        let app;
+        let player;
+        let player2;
+        let keys = {
+            68:false,
+            65:false,
+            87:false,
+            83:false
+        };
+        let playerSheet = {};
+        let speed = 2;
+
+        window.onload = function ()
+        {
+            app = new PIXI.Application(
+                {
+                    width: 750,
+                    height: 600,
+                    backgroundColor: 0xAAAAAA
+                }
+            );
+            document.body.appendChild(app.view);
+
+            //keyboard event handlers
+            window.addEventListener('keydown',keysDown);
+            window.addEventListener('keyup',keysUp);
+
+            // preload assets
+            app.loader.baseUrl = 'images';
+            app.loader
+                .add('tileset','tileset.png');
+
+
+            app.loader.onProgress.add(showProgress);
+            app.loader.onComplete.add(doneLoading);
+            app.loader.onError.add(reportError);
+
+            app.loader.load();
+        }
+
+        function showProgress(e)
+        {
+            console.log(e.progress);
+        }
+        function reportError(e)
+        {
+            console.log('ERROR:' + e.message);
+        }
+        function doneLoading(e)
+        {
+            console.log('done loading!');
+
+            createPlayerSheet();
+            createPlayer();
+
+            app.ticker.add(gameLoop);
+        }
+
+        function gameLoop()
+        {
+            //w
+            if(keys['87']){
+                if(!player.playing){
+                    player.textures = playerSheet.walkNorth;
+                    player.play();
+                }
+                player.y -= speed;
+            }
+            //s
+            if(keys['83']){
+                if(!player.playing){
+                    player.textures = playerSheet.walkSouth;
+                    player.play();
+                }
+                player.y += speed;
+            }
+            //a
+            if(keys['65']){
+                if(!player.playing){
+                    player.textures = playerSheet.walkWest;
+                    player.play();
+               }
+                player.x -= speed;
+            }
+            //d
+            if(keys['68']){
+                if(!player.playing){
+                    player.textures = playerSheet.walkEast;
+                    player.play();
+                }
+                player.x += speed;
+            }
+            // if(keys['68']===false&&keys['65']===false&&keys['87']===false&&keys['83']===false){
+            //     player.stop();
+            // }
+        }
+
+        function keysDown(e)
+        {
+            keys[e.keyCode] = true;
+        }
+        function keysUp(e)
+        {
+            keys[e.keyCode] = false;
+        }
+
+        function createPlayer()
+        {
+            player = new PIXI.AnimatedSprite(playerSheet.standSouth);
+            player.anchor.set(0.5);
+            player.animationSpeed = 0.5;
+            player.loop = false;
+            player.x = app.view.width / 2;
+            player.y = app.view.height / 2;
+            player.scale.set(5);
+            app.stage.addChild(player);
+            player.play();
+
+        }
+
+        function createPlayerSheet()
+        {
+            let ssheet = new PIXI.BaseTexture.from(app.loader.resources["tileset"].url);
+            let w = 16;
+            let h = 16;
+
+            playerSheet['standSouth'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(4 * w, 0, w, h))
+            ];
+
+            playerSheet['standWest'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(2 * w, 0, w, h))
+            ];
+
+            playerSheet['standEast'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(6 * w, 0, w, h))
+            ];
+
+            playerSheet['standNorth'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(0 * w, 0, w, h))
+            ];
+
+            playerSheet['walkSouth'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(4 * w, 0, w, h)),
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(5 * w, 0, w, h)),
+            ];
+
+            playerSheet['walkWest'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(2 * w, 0, w, h)),
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(3 * w, 0, w, h)),
+            ];
+
+            playerSheet['walkEast'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(6 * w, 0, w, h)),
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(7 * w, 0, w, h)),
+            ];
+
+            playerSheet['walkNorth'] = [
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(0 * w, 0, w, h)),
+                new PIXI.Texture(ssheet, new PIXI.Rectangle(1 * w, 0, w, h)),
+            ];
+        }
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

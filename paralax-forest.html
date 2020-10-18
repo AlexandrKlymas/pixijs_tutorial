@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixi tutorial</title>
+
+    <script src="js/pixi.min.js"></script>
+    <script>
+        let app;
+        let back;
+        let front;
+        let lights;
+        let middle;
+        let bgX = 0;
+        let bgSpeed = 0.2;
+
+        window.onload = function ()
+        {
+            app = new PIXI.Application(
+                {
+                    width: 750,
+                    height: 600,
+                    backgroundColor: 0xAAAAAA
+                }
+            );
+            document.querySelector('#gameDiv').appendChild(app.view);
+
+            app.loader.baseUrl = 'images';
+            app.loader
+                .add('back','parallax-forest-back-trees.png')
+                .add('front','parallax-forest-front-trees.png')
+                .add('lights','parallax-forest-lights.png')
+                .add('middle','parallax-forest-middle-trees.png');
+
+            app.loader.onComplete.add(doneLoading);
+            app.loader.load();
+
+        }
+        function gameLoop(delta){
+            updateBg();
+        }
+
+        function doneLoading()
+        {
+            back = createBg(app.loader.resources['back'].texture);
+            middle = createBg(app.loader.resources['middle'].texture);
+            front = createBg(app.loader.resources['front'].texture);
+
+            document.addEventListener('keyup',switchDir);
+
+            app.ticker.add(gameLoop);
+        }
+
+        function createBg(texture){
+            let tiling = new PIXI.TilingSprite(texture,750,600);
+            tiling.position.set(0,0);
+            tiling.scale.set(4);
+            app.stage.addChild(tiling);
+
+            return tiling;
+        }
+
+        function updateBg(){
+            bgX = (bgX+bgSpeed);
+            front.tilePosition.x =  bgX;
+            middle.tilePosition.x = bgX / 2;
+            back.tilePosition.x = bgX / 4;
+        }
+
+        function switchDir(e){
+            console.log(e.keyCode);
+            switch(e.keyCode){
+                case 37:
+                    //l arrow
+                    bgSpeed = bgSpeed -1;
+                    break;
+                case 39:
+                    //right arrow
+                    bgSpeed = bgSpeed +1;
+                    break;
+                case 32:
+                    bgSpeed = 0;
+                    break;
+            }
+        }
+
+
+
+
+    </script>
+</head>
+<body>
+<div id="gameDiv"></div>
+</body>
+</html>
